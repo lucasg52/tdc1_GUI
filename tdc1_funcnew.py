@@ -27,8 +27,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QAction, qApp, QApplication, QMenu, \
     QWidget, QGridLayout, QVBoxLayout, QHBoxLayout, QDialog, QRadioButton, QSpinBox, \
     QDoubleSpinBox, QTabWidget, QComboBox, QMessageBox, QGroupBox, QCheckBox
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtCore import QSize, QTimer, bin_
 import pyqtgraph as pg
 
 import numpy as np
@@ -363,6 +361,12 @@ class MainWindow(QMainWindow):
         self.Ch4CountsLabel = QtWidgets.QLabel("0", self)
         self.Ch4CountsLabel.setStyleSheet("color: black; font-size: 108px")
         self.Ch4CountsLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.Coinc3CountsLabel = QtWidgets.QLabel("0", self)
+        self.Coinc3CountsLabel.setStyleSheet("color: black; font-size: 108px")
+        self.Coinc3CountsLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.Coinc4CountsLabel = QtWidgets.QLabel("0", self)
+        self.Coinc4CountsLabel.setStyleSheet("color: black; font-size: 108px")
+        self.Coinc4CountsLabel.setAlignment(QtCore.Qt.AlignCenter)
 
         self.startChannelLabel = QtWidgets.QLabel("Start Channel:", self)
         self.stopChannelLabel = QtWidgets.QLabel("Stop Channel:", self)
@@ -545,7 +549,16 @@ class MainWindow(QMainWindow):
         self.layout2.addWidget(self.clearg2DataData_Button, 4, 5)
         self.tab2.setLayout(self.layout2)
         self.tabs.addTab(self.tab2, "g2")
+        #self.tabs.currentChanged.connect(self.update_plot_tab)
+
+        self.tab3 = QWidget()
+        self.layout3 = QGridLayout()
+        self.layout3.addWidget(self.Coinc3CountsLabel, 0, 5)
+        self.layout3.addWidget(self.Coinc4CountsLabel, 1, 5)
+        self.tab3.setLayout(self.layout3)
+        self.tabs.addTab(self.tab3, "More Counts")
         self.tabs.currentChanged.connect(self.update_plot_tab)
+
         #---------Tabs---------#
 
         #Layout
