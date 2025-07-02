@@ -96,7 +96,11 @@ class logWorker(QtCore.QObject):
         elif dev_mode == 'pairs':
             print('initiating pairs log')
             self.log_coincidences_data(file_name, \
-        device_path, log_flag, dev_mode, tdc1_dev)
+            device_path, log_flag, dev_mode, tdc1_dev)
+        elif dev_mode == 'coinc4':
+            print('initiating coinc4 log')
+            self.log_coinc4_data(file_name, device_path, log_flag, dev_mode, \
+                tdc1_dev, bin_width)
 
     def log_counts_data(self, file_name: str, device_path: str, log_flag: bool, \
         dev_mode: str, tdc1_dev: object):
@@ -153,7 +157,7 @@ class logWorker(QtCore.QObject):
             while self.active_flag == True:
                 coincidences = tdc1_dev.get_counts_and_coincidences(self.int_time)
                 now = time.time()
-                self.data_is_logged.emit(start, now, coincidences, dev_mode, self.radio_flags)
+                self.data_is_logged.emit(start, now, coincidences, dev_mode, self.radio_flags)# What?
                 try:
                     with open(file_name, 'a+') as f:
                         # Organising data into pairs
@@ -222,11 +226,52 @@ class logWorker(QtCore.QObject):
         print('terminating g2 log.')
         self.thread_finished.emit(tdc1_dev)
         
+
+    def log_coinc4_data(self, file_name: str, device_path: str, log_flag: bool, \
+            dev_mode: str, tdc1_dev: object, bin_width: int):
+        """[summary]
+        Logs the data from TDC1 count_coinc4 method.
+        """
+        #start = time.time()
+        #now = start
+        if log_flag is True and self.active_flag is True:
+            try:
+                open(file_name)
+            except IOError:
+                # --- Add functionality to handle empty files --- #
+                f = open(file_name, 'w')
+                f.write('#time_stamp,coincidences\n')
+            while self.active_flag is True:
+                coincidences = tdc1_dev.count_coinc4(self.int_time, bin_width)
+                #now = time.time()
+                #self.data_is_logged.emit(start, now, coincidences, dev_mode, self.radio_flags)
+                try:
+                    with open(file_name, 'a+') as f:
+                        # Organising data into pairs
+                        time_data: str = datetime.now().isoformat()
+                        data_pairs = '{},{}\n'.format(time_data, coincidences)
+                        f.write(data_pairs)
+                        pass
+                    if self.active_flag is False:
+                        break
+                except PermissionError:
+                    tdc1_dev._com.reset_input_buffer()
+                    self.permission_error.emit(tdc1_dev)
+                    return
+        elif log_flag is False:
+            while self.active_flag is True:
+                coincidences = tdc1_dev.count_coinc4(self.int_time, bin_width)
+                #now = time.time()
+                #self.data_is_logged.emit(start, now, coincidences, dev_mode, self.radio_flags)
+                if self.active_flag is False:
+                        break
+        print('terminating coinc4 log.')
+        self.thread_finished.emit(tdc1_dev)
         
 class MainWindow(QMainWindow):
     """[summary]
     Main window class containing the main window and its associated methods. 
-    Args:
+    Args
         QMainWindow (QObject): See qt documentation for more info.
     """
     # Send logging parameters to worker method
@@ -403,7 +448,7 @@ class MainWindow(QMainWindow):
         self.devCombobox.addItems(self.dev_list)
         self.devCombobox.currentTextChanged.connect(self.selectDevice)
 
-        _dev_modes = ['singles', 'pairs', 'g2']
+        _dev_modes = ['singles', 'pairs', 'g2', 'coinc4']
         self.modesCombobox = QComboBox(self)
         self.modesCombobox.addItem('Select mode')
         self.modesCombobox.addItems(_dev_modes)
@@ -686,6 +731,9 @@ class MainWindow(QMainWindow):
                     self.samplesSpinbox.setEnabled(False)
                 if newMode == 'pairs':
                     self.samplesSpinbox.setEnabled(True)
+                if newMode == 'coinc4':
+                    pass
+                    #self._tdc1_dev.mode = 'timestamp' # redundant.
             elif returnValue == QMessageBox.Cancel:
                 self.modesCombobox.setCurrentText(self._dev_mode_prev)
         elif self._dev_selected == True and self.acq_flag == False and self._data_plotted == False:
@@ -701,6 +749,9 @@ class MainWindow(QMainWindow):
             if newMode == 'singles':
                     self.samplesSpinbox.setEnabled(False)
             if newMode == 'pairs':
+                self.samplesSpinbox.setEnabled(True)
+            if newMode == 'coinc4':
+                print('Coinc4.')
                 self.samplesSpinbox.setEnabled(True)
         elif self._dev_selected == False:
             print('Please select a device first')
