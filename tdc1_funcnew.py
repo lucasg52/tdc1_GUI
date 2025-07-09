@@ -720,7 +720,7 @@ class MainWindow(QMainWindow):
                 self.acq_flag = False
                 if self._tdc1_dev == None:
                     self._tdc1_dev = tdc1.TimeStampTDC1(self._dev_path)
-                if newMode == 'g2':
+                if newMode in ('g2', 'coinc4'):
                     self._tdc1_dev.mode = 'timestamp'
                     self.samplesSpinbox.setEnabled(True)
                 else:
@@ -731,15 +731,15 @@ class MainWindow(QMainWindow):
                     self.samplesSpinbox.setEnabled(False)
                 if newMode == 'pairs':
                     self.samplesSpinbox.setEnabled(True)
-                if newMode == 'coinc4':
-                    pass
-                    #self._tdc1_dev.mode = 'timestamp' # redundant.
+                # if newMode == 'coinc4':
+                #     self._tdc1_dev.mode = 'timestamp' # should be redundant, but what do I know
+                #     self.samplesSpinbox.setEnabled(True)
             elif returnValue == QMessageBox.Cancel:
                 self.modesCombobox.setCurrentText(self._dev_mode_prev)
         elif self._dev_selected == True and self.acq_flag == False and self._data_plotted == False:
             if self._tdc1_dev == None:
                     self._tdc1_dev = tdc1.TimeStampTDC1(self._dev_path)
-            if newMode == 'g2':
+            if newMode in ('g2', 'coinc4'):
                 self._tdc1_dev.mode = 'timestamp'
                 self.samplesSpinbox.setEnabled(True)
             else:
@@ -750,9 +750,9 @@ class MainWindow(QMainWindow):
                     self.samplesSpinbox.setEnabled(False)
             if newMode == 'pairs':
                 self.samplesSpinbox.setEnabled(True)
-            if newMode == 'coinc4':
-                print('Coinc4.')
-                self.samplesSpinbox.setEnabled(True)
+            # if newMode == 'coinc4':
+            #     print('Coinc4.')
+            #     self.samplesSpinbox.setEnabled(True)
         elif self._dev_selected == False:
             print('Please select a device first')
         
