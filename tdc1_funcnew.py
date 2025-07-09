@@ -725,7 +725,7 @@ class MainWindow(QMainWindow):
                     self.samplesSpinbox.setEnabled(True)
                 else:
                     self._tdc1_dev.mode = newMode # Setting tdc1 mode with @setter
-                self._dev_mode = newMode
+                # self._dev_mode = newMode
                 print(f'Device at {self._dev_path} is now in {self._dev_mode} mode')
                 if newMode == 'singles':
                     self.samplesSpinbox.setEnabled(False)
@@ -744,7 +744,7 @@ class MainWindow(QMainWindow):
                 self.samplesSpinbox.setEnabled(True)
             else:
                 self._tdc1_dev.mode = newMode
-            self._dev_mode = newMode
+            # self._dev_mode = newMode
             print(f'Device at {self._dev_path} is now in {self._dev_mode} mode')
             if newMode == 'singles':
                     self.samplesSpinbox.setEnabled(False)
