@@ -99,7 +99,13 @@ class logWorker(QtCore.QObject):
             device_path, log_flag, dev_mode, tdc1_dev)
         elif dev_mode == 'coinc4':
             print('initiating coinc4 log')
+            print(f'{self.int_time=}')
             self.log_coinc4_data(file_name, device_path, log_flag, dev_mode, \
+                tdc1_dev, bin_width)
+        elif dev_mode == 'coinc3':
+            print('initiating coinc3 log')
+            print(f'{self.int_time=}')
+            self.log_coinc3_data(file_name, device_path, log_flag, dev_mode, \
                 tdc1_dev, bin_width)
 
     def log_counts_data(self, file_name: str, device_path: str, log_flag: bool, \
@@ -268,6 +274,47 @@ class logWorker(QtCore.QObject):
         print('terminating coinc4 log.')
         self.thread_finished.emit(tdc1_dev)
         
+    def log_coinc3_data(self, file_name: str, device_path: str, log_flag: bool, \
+            dev_mode: str, tdc1_dev: object, bin_width: int):
+        """[summary]
+        Logs the data from TDC1 count_coinc4 method with coinc3=true.
+        """
+        #start = time.time()
+        #now = start
+        keys_str="coinc3,paircnt_1_3,paircnt_1_4"
+        if log_flag is True and self.active_flag is True:
+            try:
+                open(file_name)
+            except IOError:
+                # --- Add functionality to handle empty files --- #
+                f = open(file_name, 'w')
+                f.write('#time_stamp,'+keys_str+'\n')
+            while self.active_flag is True:
+                coincidences_dict = tdc1_dev.count_coinc4(self.int_time, bin_width, coinc3=True)
+                #now = time.time()
+                #self.data_is_logged.emit(start, now, coincidences, dev_mode, self.radio_flags)
+                try:
+                    with open(file_name, 'a+') as f:
+                        # Organising data into pairs
+                        time_data: str = datetime.now().isoformat()
+                        data_pairs = '{},{}\n'.format(time_data, 
+                                ','.join(coincidences_dict[s] for s in keys_str.split(','))
+                                )
+                        f.write(data_pairs)
+                        pass
+                    if self.active_flag is False:
+                        break
+                except PermissionError:
+                    tdc1_dev._com.reset_input_buffer()
+                    self.permission_error.emit(tdc1_dev)
+                    return
+        elif log_flag is False:
+            while self.active_flag is True:
+                coincidences_dict = tdc1_dev.count_coinc4(self.int_time, bin_width, coinc3=True)
+                print("A log file must be specified when using coinc3")
+                break
+        print('terminating coinc3 log.')
+        self.thread_finished.emit(tdc1_dev)
 class MainWindow(QMainWindow):
     """[summary]
     Main window class containing the main window and its associated methods. 
@@ -448,7 +495,7 @@ class MainWindow(QMainWindow):
         self.devCombobox.addItems(self.dev_list)
         self.devCombobox.currentTextChanged.connect(self.selectDevice)
 
-        _dev_modes = ['singles', 'pairs', 'g2', 'coinc4']
+        _dev_modes = ['singles', 'pairs', 'g2', 'coinc4', 'coinc3']
         self.modesCombobox = QComboBox(self)
         self.modesCombobox.addItem('Select mode')
         self.modesCombobox.addItems(_dev_modes)
@@ -720,7 +767,7 @@ class MainWindow(QMainWindow):
                 self.acq_flag = False
                 if self._tdc1_dev == None:
                     self._tdc1_dev = tdc1.TimeStampTDC1(self._dev_path)
-                if newMode in ('g2', 'coinc4'):
+                if newMode in ('g2', 'coinc4', 'coinc3'):
                     self._tdc1_dev.mode = 'timestamp'
                     self.samplesSpinbox.setEnabled(True)
                 else:
@@ -739,7 +786,7 @@ class MainWindow(QMainWindow):
         elif self._dev_selected == True and self.acq_flag == False and self._data_plotted == False:
             if self._tdc1_dev == None:
                     self._tdc1_dev = tdc1.TimeStampTDC1(self._dev_path)
-            if newMode in ('g2', 'coinc4'):
+            if newMode in ('g2', 'coinc4', 'coinc3'):
                 self._tdc1_dev.mode = 'timestamp'
                 self.samplesSpinbox.setEnabled(True)
             else:
