@@ -290,7 +290,12 @@ class logWorker(QtCore.QObject):
                 f = open(file_name, 'w')
                 f.write('#time_stamp,'+keys_str+'\n')
             while self.active_flag is True:
-                coincidences_dict = tdc1_dev.count_coinc4(self.int_time, bin_width, coinc3=True)
+                try:
+                    coincidences_dict = tdc1_dev.count_coinc4(self.int_time, bin_width, coinc3=True)
+                except Exception as e:
+                    time_data: str = datetime.now().isoformat()
+                    coincidences_dict = {s: 0 for s in keys_str.split(',')}
+                    print(f"{time_data}: Failed to log data point:" + str(e))
                 #now = time.time()
                 #self.data_is_logged.emit(start, now, coincidences, dev_mode, self.radio_flags)
                 try:
