@@ -298,7 +298,7 @@ class logWorker(QtCore.QObject):
                         # Organising data into pairs
                         time_data: str = datetime.now().isoformat()
                         data_pairs = '{},{}\n'.format(time_data, 
-                                ','.join(coincidences_dict[s] for s in keys_str.split(','))
+                                ','.join(str(coincidences_dict[s]) for s in keys_str.split(','))
                                 )
                         f.write(data_pairs)
                         pass
