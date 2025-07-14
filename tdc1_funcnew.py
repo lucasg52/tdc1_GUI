@@ -45,8 +45,13 @@ import serial
     Live Start button can be used to start the graphing without any logging.
     Select logfile and Start logging buttons are used to log data to a csv file in addition to plotting.
 """
-
-
+while 1:
+    try:
+        COINC_WID = int(input("Enter a coincidence window width in nanosecs:"))
+    except ValueError:
+        print('invalid integer value inputted.')
+    else:
+        break
 PLT_SAMPLES = 501 # plot samples
 
 class logWorker(QtCore.QObject):
@@ -248,7 +253,8 @@ class logWorker(QtCore.QObject):
                 f = open(file_name, 'w')
                 f.write('#time_stamp,coincidences\n')
             while self.active_flag is True:
-                coincidences = tdc1_dev.count_coinc4(self.int_time, bin_width)
+                #coincidences = tdc1_dev.count_coinc4(self.int_time, bin_width)
+                coincidences = tdc1_dev.count_coinc4(self.int_time, COINC_WID)
                 #now = time.time()
                 #self.data_is_logged.emit(start, now, coincidences, dev_mode, self.radio_flags)
                 try:
@@ -266,7 +272,7 @@ class logWorker(QtCore.QObject):
                     return
         elif log_flag is False:
             while self.active_flag is True:
-                coincidences = tdc1_dev.count_coinc4(self.int_time, bin_width)
+                coincidences = tdc1_dev.count_coinc4(self.int_time, COINC_WID)
                 #now = time.time()
                 #self.data_is_logged.emit(start, now, coincidences, dev_mode, self.radio_flags)
                 if self.active_flag is False:
@@ -281,7 +287,7 @@ class logWorker(QtCore.QObject):
         """
         #start = time.time()
         #now = start
-        keys_str="coinc3,paircnt_1_3,paircnt_1_4"
+        keys_str="coinc3,paircnt_1_3,paircnt_1_4,gatecnt"
         if log_flag is True and self.active_flag is True:
             try:
                 open(file_name)
@@ -291,7 +297,7 @@ class logWorker(QtCore.QObject):
                 f.write('#time_stamp,'+keys_str+'\n')
             while self.active_flag is True:
                 try:
-                    coincidences_dict = tdc1_dev.count_coinc4(self.int_time, bin_width, coinc3=True)
+                    coincidences_dict = tdc1_dev.count_coinc4(self.int_time, COINC_WID, coinc3=True)
                 except Exception as e:
                     time_data: str = datetime.now().isoformat()
                     coincidences_dict = {s: 0 for s in keys_str.split(',')}
@@ -315,7 +321,7 @@ class logWorker(QtCore.QObject):
                     return
         elif log_flag is False:
             while self.active_flag is True:
-                coincidences_dict = tdc1_dev.count_coinc4(self.int_time, bin_width, coinc3=True)
+                coincidences_dict = tdc1_dev.count_coinc4(self.int_time, COINC_WID, coinc3=True)
                 print("A log file must be specified when using coinc3")
                 break
         print('terminating coinc3 log.')
